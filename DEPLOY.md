@@ -39,8 +39,8 @@ Go to your GitHub repo → **Settings** → **Secrets and variables** → **Acti
 
 ### 3.2 Create MySQL Database
 1. Go to **DB** → **Add Database**
-2. Database name: `artofexstudio_db`
-3. Username: `artofexstudio_user`
+2. Database name: `artofex_db`
+3. Username: `artofex_user`
 4. Set a strong password
 5. **Note the credentials** — you'll add them to `.env` on the server
 
