@@ -56,7 +56,7 @@ jobs:
           if [ -d /tmp/deploy/public ]; then
             cp deploy/index.php /tmp/deploy/index.php
             cp deploy/setup.php /tmp/deploy/setup.php
-            cp /tmp/deploy/public/.htaccess /tmp/deploy/.htaccess 2>/dev/null || true
+            cp deploy/.htaccess /tmp/deploy/.htaccess
             cp /tmp/deploy/public/favicon.ico /tmp/deploy/favicon.ico 2>/dev/null || true
             cp /tmp/deploy/public/robots.txt /tmp/deploy/robots.txt 2>/dev/null || true
             # Copy build/ to root so browser can load assets (Vite manifest stays in public/ for Laravel)
