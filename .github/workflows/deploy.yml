@@ -1,0 +1,107 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, bcmath, sqlite3, pdo_mysql
+
+      - name: Install Composer dependencies
+        run: |
+          composer install --optimize-autoloader --no-dev --no-interaction --no-progress
+          composer dump-autoload
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Create .env
+        run: cp .env.example .env
+
+      - name: Generate app key
+        run: php artisan key:generate
+
+      - name: Cache config
+        run: |
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+
+      - name: Create deployment archive
+        run: |
+          tar -czf /tmp/arofex-release.tar.gz \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='tests' \
+            --exclude='.env.example' \
+            --exclude='phpunit.xml' \
+            .
+
+      - name: Upload via SFTP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          port: 22
+          source: "/tmp/arofex-release.tar.gz"
+          target: "/home/${{ secrets.SFTP_USER }}/deploy"
+          overwrite: true
+
+      - name: Deploy on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          port: 22
+          script: |
+            set -e
+
+            DEPLOY_DIR="/home/${{ secrets.SFTP_USER }}/deploy"
+            APP_DIR="/home/${{ secrets.SFTP_USER }}/web/${{ secrets.DEPLOY_DOMAIN }}/public_html"
+
+            mkdir -p "$APP_DIR"
+
+            tar -xzf "$DEPLOY_DIR/arofex-release.tar.gz" -C "$APP_DIR"
+            rm -f "$DEPLOY_DIR/arofex-release.tar.gz"
+
+            cd "$APP_DIR"
+
+            if [ ! -f .env ]; then
+              cp .env.example .env
+            fi
+
+            chmod -R 775 storage/
+            chmod -R 775 bootstrap/cache/
+            chown -R ${{ secrets.SFTP_USER }}:${{ secrets.SFTP_USER }} storage/ bootstrap/cache/
+
+            if [ ! -f storage/framework/maintenance.php ]; then
+              php artisan migrate --force 2>/dev/null || true
+            fi
+
+            php artisan storage:link 2>/dev/null || true
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+
+            echo "Deployed successfully to $APP_DIR"
