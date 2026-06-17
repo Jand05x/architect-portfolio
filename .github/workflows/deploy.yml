@@ -59,6 +59,8 @@ jobs:
             cp /tmp/deploy/public/.htaccess /tmp/deploy/.htaccess 2>/dev/null || true
             cp /tmp/deploy/public/favicon.ico /tmp/deploy/favicon.ico 2>/dev/null || true
             cp /tmp/deploy/public/robots.txt /tmp/deploy/robots.txt 2>/dev/null || true
+            # Copy build/ to root so browser can load assets (Vite manifest stays in public/ for Laravel)
+            cp -r /tmp/deploy/public/build /tmp/deploy/build 2>/dev/null || true
           fi
           ls -la /tmp/deploy/.env && echo ".env exists" || echo ".env missing"
           ls /tmp/deploy/index.php && echo "index.php at root" || echo "index.php missing"
