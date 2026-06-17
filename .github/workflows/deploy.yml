@@ -45,14 +45,16 @@ jobs:
           php artisan route:cache
           php artisan view:cache
 
-      - name: Create deployment archive
+      - name: Prepare deployment files
         run: |
-          zip -r /tmp/artofex-release.zip . \
-            -x ".git/*" ".github/*" "node_modules/*" "tests/*" ".env.example" "phpunit.xml"
+          mkdir -p /tmp/deploy
+          rsync -a --exclude='.git' --exclude='.github' --exclude='node_modules' \
+            --exclude='tests' --exclude='.env.example' --exclude='phpunit.xml' \
+            . /tmp/deploy/
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: deploy-archive
-          path: /tmp/artofex-release.zip
+          name: artofex-deploy
+          path: /tmp/deploy/
           retention-days: 7
