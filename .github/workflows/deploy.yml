@@ -49,8 +49,9 @@ jobs:
         run: |
           mkdir -p /tmp/deploy
           rsync -a --exclude='.git' --exclude='.github' --exclude='node_modules' \
-            --exclude='tests' --exclude='.env.example' --exclude='phpunit.xml' \
+            --exclude='tests' --exclude='phpunit.xml' \
             . /tmp/deploy/
+          ls -la /tmp/deploy/.env && echo "✅ .env exists" || echo "⚠️ .env missing"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
