@@ -56,52 +56,9 @@ jobs:
             --exclude='phpunit.xml' \
             .
 
-      - name: Upload via SFTP
-        uses: appleboy/scp-action@v0.1.7
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
         with:
-          host: ${{ secrets.SFTP_HOST }}
-          username: ${{ secrets.SFTP_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          source: "/tmp/arofex-release.tar.gz"
-          target: "/home/${{ secrets.SFTP_USER }}/deploy"
-          overwrite: true
-
-      - name: Deploy on server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SFTP_HOST }}
-          username: ${{ secrets.SFTP_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
-            set -e
-
-            DEPLOY_DIR="/home/${{ secrets.SFTP_USER }}/deploy"
-            APP_DIR="/home/${{ secrets.SFTP_USER }}/web/${{ secrets.DEPLOY_DOMAIN }}/public_html"
-
-            mkdir -p "$APP_DIR"
-
-            tar -xzf "$DEPLOY_DIR/arofex-release.tar.gz" -C "$APP_DIR"
-            rm -f "$DEPLOY_DIR/arofex-release.tar.gz"
-
-            cd "$APP_DIR"
-
-            if [ ! -f .env ]; then
-              cp .env.example .env
-            fi
-
-            chmod -R 775 storage/
-            chmod -R 775 bootstrap/cache/
-            chown -R ${{ secrets.SFTP_USER }}:${{ secrets.SFTP_USER }} storage/ bootstrap/cache/
-
-            if [ ! -f storage/framework/maintenance.php ]; then
-              php artisan migrate --force 2>/dev/null || true
-            fi
-
-            php artisan storage:link 2>/dev/null || true
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-
-            echo "Deployed successfully to $APP_DIR"
+          name: deploy-archive
+          path: /tmp/arofex-release.tar.gz
+          retention-days: 7
