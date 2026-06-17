@@ -37,7 +37,7 @@ class PageController extends Controller
         ]);
 
         Mail::raw($validated['message'], function ($message) use ($validated) {
-            $message->to(config('mail.from.address', 'info@artofex.com'))
+            $message->to(config('mail.from.address', 'info@artofexstudio.com'))
                 ->subject('Contact Form: ' . $validated['name'])
                 ->replyTo($validated['email'], $validated['name']);
         });

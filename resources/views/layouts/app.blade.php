@@ -63,7 +63,7 @@
                 <div>
                     <h4 class="text-xs uppercase tracking-[0.2em] mb-4 font-medium">Contact</h4>
                     <div class="text-sm text-cream/60 space-y-2">
-                        <p>info@artofex.com</p>
+                        <p>info@artofexstudio.com</p>
                         <p>+1 (555) 000-0000</p>
                     </div>
                 </div>

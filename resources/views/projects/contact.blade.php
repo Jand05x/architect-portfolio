@@ -64,7 +64,7 @@
             <div class="space-y-8 text-ink-light/70">
                 <div>
                     <h3 class="text-xs uppercase tracking-[0.15em] text-bronze mb-2">Email</h3>
-                    <p class="text-base">info@artofex.com</p>
+                    <p class="text-base">info@artofexstudio.com</p>
                 </div>
 
                 <div>
