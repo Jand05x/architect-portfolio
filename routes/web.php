@@ -14,31 +14,5 @@ Route::post('/contact', [PageController::class, 'sendContact'])
 Route::get('/projects', [ProjectController::class, 'index'])->name('projects.index');
 Route::get('/projects/{project:slug}', [ProjectController::class, 'show'])->name('projects.show');
 
-Route::get('/run-setup', function () {
-    try {
-        $output = [];
-        $output[] = 'Migrating...';
-        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        $output[] = \Illuminate\Support\Facades\Artisan::output();
-
-        $output[] = 'Caching config...';
-        \Illuminate\Support\Facades\Artisan::call('config:cache');
-        $output[] = \Illuminate\Support\Facades\Artisan::output();
-
-        $output[] = 'Caching routes...';
-        \Illuminate\Support\Facades\Artisan::call('route:cache');
-        $output[] = \Illuminate\Support\Facades\Artisan::output();
-
-        $output[] = 'Caching views...';
-        \Illuminate\Support\Facades\Artisan::call('view:cache');
-        $output[] = \Illuminate\Support\Facades\Artisan::output();
-
-        $output[] = 'Storage link...';
-        \Illuminate\Support\Facades\Artisan::call('storage:link');
-        $output[] = \Illuminate\Support\Facades\Artisan::output();
-
-        return nl2br(implode("\n", $output));
-    } catch (\Exception $e) {
-        return 'Error: ' . $e->getMessage();
-    }
-});
+// Route caching requires controller-based routes, not closures
+Route::get('/run-setup', [\App\Http\Controllers\SetupController::class, 'run']);
