@@ -45,13 +45,19 @@ jobs:
           php artisan route:cache
           php artisan view:cache
 
-      - name: Prepare deployment files
+      - name: Prepare deployment files (flattened for HestiaCP)
         run: |
           mkdir -p /tmp/deploy
           rsync -a --exclude='.git' --exclude='.github' --exclude='node_modules' \
             --exclude='tests' --exclude='phpunit.xml' \
             . /tmp/deploy/
+          # Flatten: move public/ contents to root (HestiaCP serves from public_html/)
+          if [ -d /tmp/deploy/public ]; then
+            rsync -a /tmp/deploy/public/ /tmp/deploy/
+            rm -rf /tmp/deploy/public
+          fi
           ls -la /tmp/deploy/.env && echo "✅ .env exists" || echo "⚠️ .env missing"
+          ls /tmp/deploy/index.php && echo "✅ index.php at root" || echo "⚠️ index.php missing"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
