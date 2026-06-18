@@ -67,6 +67,7 @@ jobs:
             cp -r /tmp/deploy/public/css /tmp/deploy/css 2>/dev/null || true
             cp -r /tmp/deploy/public/js /tmp/deploy/js 2>/dev/null || true
             cp -r /tmp/deploy/public/fonts /tmp/deploy/fonts 2>/dev/null || true
+            cp -r /tmp/deploy/public/images /tmp/deploy/images 2>/dev/null || true
           fi
           ls -la /tmp/deploy/.env && echo ".env exists" || echo ".env missing"
           ls /tmp/deploy/index.php && echo "index.php at root" || echo "index.php missing"
