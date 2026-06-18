@@ -63,6 +63,13 @@ try {
     $output[] = 'Storage link already exists or failed';
 }
 
+try {
+    Artisan::call('filament:assets');
+    $output[] = 'Filament assets published';
+} catch (\Exception $e) {
+    $errors[] = 'Filament assets failed: ' . $e->getMessage();
+}
+
 echo '<h2>Deployment Setup</h2>';
 echo '<h3>Success:</h3><ul>';
 foreach ($output as $line) {

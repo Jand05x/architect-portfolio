@@ -99,11 +99,22 @@ MAIL_ENCRYPTION=tls
 
 ## Step 6: Run Initial Setup
 
-Use HestiaCP **Web Terminal** (under user settings) or SSH:
+### Option A — Web-based setup (recommended, no SSH needed)
+
+1. After deployment, set a `SETUP_TOKEN` in your `.env` file via HestiaCP **File Manager**:
+   ```
+   SETUP_TOKEN=your-random-secret-token
+   ```
+2. Visit `https://artofexstudio.com/run-setup?token=your-random-secret-token`
+3. The page will run migrations, publish Filament assets, and create an admin user.
+4. **Delete `SETUP_TOKEN` from `.env`** after setup is complete.
+
+### Option B — HestiaCP Web Terminal or SSH
 
 ```bash
 cd /home/artofex/web/artofexstudio.com/public_html
 php artisan migrate --force
+php artisan filament:assets
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
