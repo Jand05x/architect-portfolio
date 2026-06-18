@@ -82,15 +82,20 @@ jobs:
       - name: Remove generated .env (keep production one intact)
         run: rm -f /tmp/deploy/.env
 
+      - name: Move deploy package to workspace for SCP
+        run: |
+          mkdir -p deploy-package
+          cp -r /tmp/deploy/. deploy-package/
+
       - name: Deploy to HestiaCP via SCP
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SFTP_HOST }}
           username: ${{ secrets.SFTP_USER }}
           password: ${{ secrets.SFTP_PASSWORD }}
-          source: "/tmp/deploy/*"
+          source: "deploy-package/*"
           target: "/home/artofex/web/artofexstudio.com/public_html/"
-          strip_components: 2
+          strip_components: 1
 
       - name: Post-deploy setup
         uses: appleboy/ssh-action@v1.2.0
