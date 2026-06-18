@@ -78,3 +78,29 @@ jobs:
           name: artofex-deploy
           path: /tmp/deploy/
           retention-days: 7
+
+      - name: Remove generated .env (keep production one intact)
+        run: rm -f /tmp/deploy/.env
+
+      - name: Deploy to HestiaCP via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          source: "/tmp/deploy/*"
+          target: "/home/artofex/web/artofexstudio.com/public_html/"
+          strip_components: 2
+
+      - name: Post-deploy setup
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          script: |
+            cd /home/artofex/web/artofexstudio.com/public_html
+            php artisan migrate --force
+            php artisan config:cache
+            php artisan route:cache 2>/dev/null || echo "Route cache skipped"
+            php artisan view:cache
