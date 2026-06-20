@@ -83,3 +83,25 @@ jobs:
           path: /tmp/deploy/
           retention-days: 7
 
+      - name: Deploy to HestiaCP via rsync over SSH
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq sshpass
+          sshpass -p "${{ secrets.SFTP_PASSWORD }}" rsync -avz --delete \
+            --exclude='.env' \
+            --rsh="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
+            /tmp/deploy/ \
+            ${{ secrets.SFTP_USER }}@${{ secrets.SFTP_HOST }}:/home/artofex/web/artofexstudio.com/public_html/
+
+      - name: Post-deploy setup
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SFTP_HOST }}
+          username: ${{ secrets.SFTP_USER }}
+          password: ${{ secrets.SFTP_PASSWORD }}
+          script: |
+            cd /home/artofex/web/artofexstudio.com/public_html
+            php artisan migrate --force
+            php artisan config:cache
+            php artisan route:cache 2>/dev/null || echo "Route cache skipped"
+            php artisan view:cache
+
