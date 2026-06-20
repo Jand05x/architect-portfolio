@@ -84,14 +84,16 @@ jobs:
           retention-days: 7
 
       - name: Deploy to HestiaCP via SCP
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.SFTP_HOST }}
           username: ${{ secrets.SFTP_USER }}
           password: ${{ secrets.SFTP_PASSWORD }}
-          source: "/tmp/deploy/*"
+          port: 22
+          source: "/tmp/deploy/"
           target: "/home/artofex/web/artofexstudio.com/public_html/"
           strip_components: 2
+          debug: true
 
       - name: Post-deploy setup
         uses: appleboy/ssh-action@v1.2.0
