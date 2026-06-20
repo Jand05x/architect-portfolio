@@ -42,33 +42,39 @@ jobs:
       - name: Generate app key
         run: php artisan key:generate
 
+      # ❌ FIXED CACHE STEP (no route:cache)
       - name: Cache config
         run: |
           php artisan config:cache
-          php artisan route:cache
           php artisan view:cache
 
       - name: Prepare deployment files (flattened for HestiaCP)
         run: |
           mkdir -p /tmp/deploy
+
           rsync -a --exclude='.git' --exclude='.github' --exclude='node_modules' \
             --exclude='tests' --exclude='phpunit.xml' --exclude='deploy' \
             . /tmp/deploy/
-          # Keep public/ intact (Vite manifest lives there), but copy boot files to root
-          # HestiaCP serves from public_html/ directly, so root needs index.php
+
+          # Copy Laravel public assets to root for HestiaCP
           if [ -d /tmp/deploy/public ]; then
             cp deploy/index.php /tmp/deploy/index.php
             cp deploy/setup.php /tmp/deploy/setup.php
             cp deploy/.htaccess /tmp/deploy/.htaccess
+
             cp /tmp/deploy/public/favicon.ico /tmp/deploy/favicon.ico 2>/dev/null || true
             cp /tmp/deploy/public/robots.txt /tmp/deploy/robots.txt 2>/dev/null || true
-            # Copy build/ and Filament assets to root so browser can load them
+
             cp -r /tmp/deploy/public/build /tmp/deploy/build 2>/dev/null || true
             cp -r /tmp/deploy/public/css /tmp/deploy/css 2>/dev/null || true
             cp -r /tmp/deploy/public/js /tmp/deploy/js 2>/dev/null || true
             cp -r /tmp/deploy/public/fonts /tmp/deploy/fonts 2>/dev/null || true
             cp -r /tmp/deploy/public/images /tmp/deploy/images 2>/dev/null || true
+
+            # ✅ FIX: add videos support
+            cp -r /tmp/deploy/public/videos /tmp/deploy/videos 2>/dev/null || true
           fi
+
           ls -la /tmp/deploy/.env && echo ".env exists" || echo ".env missing"
           ls /tmp/deploy/index.php && echo "index.php at root" || echo "index.php missing"
           ls /tmp/deploy/public/build/manifest.json && echo "Vite manifest preserved" || echo "Vite manifest missing"
@@ -103,8 +109,9 @@ jobs:
           password: ${{ secrets.SFTP_PASSWORD }}
           script: |
             cd /home/artofex/web/artofexstudio.com/public_html
-            php artisan migrate --force
-            php artisan config:cache
-            php artisan route:cache 2>/dev/null || echo "Route cache skipped"
-            php artisan view:cache
 
+            php artisan migrate --force
+
+            php artisan config:cache
+            php artisan route:clear
+            php artisan view:cache
